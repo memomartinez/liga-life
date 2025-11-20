@@ -1,0 +1,29 @@
+{% extends 'inscripciones/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+  <div class="card shadow-sm text-center p-4" style="max-width: 520px; width: 100%;">
+    <div class="mb-3">
+      <!-- Ícono de advertencia grande -->
+      <span class="display-1 text-warning">&#9888;</span>
+    </div>
+
+    <h3 class="mb-3">Comprobante pendiente de aprobación</h3>
+
+    <p class="mb-2">
+      El comprobante del equipo <strong>{{ team.name }}</strong><br>
+      (folio <strong>{{ team.folio }}</strong>) aún no ha sido aprobado por el comité.
+    </p>
+
+    <p class="text-muted small mb-4">
+      Cuando tu pago sea validado y el estatus cambie a
+      <strong>"Aprobado"</strong>, podrás regresar a esta página para
+      registrar a tus jugadores.
+    </p>
+
+    <a href="{% url 'home' %}" class="btn btn-outline-primary">
+      Volver al inicio
+    </a>
+  </div>
+</div>
+{% endblock %}

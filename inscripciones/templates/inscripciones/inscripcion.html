@@ -1,0 +1,139 @@
+{% extends 'inscripciones/base.html' %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <h2 class="h5 mb-0">Ficha de inscripción de equipo</h2>
+  </div>
+  <div class="card-body">
+    <p class="mb-4">
+      Completa la siguiente información para registrar tu equipo en la Liga de Futbol Empresarial (LiFE).
+      El sistema generará un folio y una fecha límite de pago de 7 días naturales.
+    </p>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      <!-- Torneo y categoría -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">{{ form.tournament.label }} *</label>
+          {{ form.tournament }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ form.category.label }} *</label>
+          {{ form.category }}
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Datos del equipo -->
+      <h3 class="h6 text-uppercase text-muted mt-3">Datos del equipo</h3>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">{{ form.name.label }} *</label>
+          {{ form.name }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ form.company_name.label }}</label>
+          {{ form.company_name }}
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Responsable principal -->
+      <h3 class="h6 text-uppercase text-muted mt-3">Responsable del equipo</h3>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">{{ form.delegate_name.label }} *</label>
+          {{ form.delegate_name }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ form.delegate_phone.label }} *</label>
+          {{ form.delegate_phone }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ form.delegate_office_phone.label }}</label>
+          {{ form.delegate_office_phone }}
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">{{ form.delegate_email.label }}</label>
+          {{ form.delegate_email }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ form.delegate_ine.label }}</label>
+          {{ form.delegate_ine }}
+          <small class="text-muted d-block">Opcional. Imagen o PDF del INE.</small>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Responsable suplente -->
+      <h3 class="h6 text-uppercase text-muted mt-3">Responsable suplente</h3>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">{{ form.alternate_delegate_name.label }}</label>
+          {{ form.alternate_delegate_name }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ form.alternate_delegate_phone.label }}</label>
+          {{ form.alternate_delegate_phone }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ form.alternate_delegate_office_phone.label }}</label>
+          {{ form.alternate_delegate_office_phone }}
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">{{ form.alternate_delegate_ine.label }}</label>
+          {{ form.alternate_delegate_ine }}
+          <small class="text-muted d-block">Opcional. Imagen o PDF del INE del suplente.</small>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Horario preferente -->
+      <h3 class="h6 text-uppercase text-muted mt-3">Horario preferente de juego</h3>
+      <p class="small text-muted mb-2">
+        Selecciona hasta <strong>2 días</strong> de lunes a viernes en los que prefieran jugar.
+      </p>
+
+      <div class="mb-3">
+        {% for checkbox in form.preferred_days %}
+          <div class="form-check form-check-inline">
+            {{ checkbox.tag }}
+            <label class="form-check-label ms-1">{{ checkbox.choice_label }}</label>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if form.errors %}
+        <div class="alert alert-danger">
+          Por favor revisa los campos marcados, hay errores en el formulario.
+        </div>
+      {% endif %}
+
+      <p class="text-muted small mt-3">
+        * Campos obligatorios. El listado de jugadores y el comprobante de pago se capturarán en pasos posteriores.
+      </p>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <button type="reset" class="btn btn-outline-secondary">Limpiar</button>
+        <button type="submit" class="btn btn-primary">Enviar inscripción</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

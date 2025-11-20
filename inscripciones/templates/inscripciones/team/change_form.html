@@ -1,0 +1,16 @@
+{# templates/admin/inscripciones/team/change_form.html #}
+{% extends "admin/change_form.html" %}
+
+{# Botones arriba: reutilizamos los de Django y añadimos "Recargar" #}
+{% block submit_buttons_top %}
+  {{ block.super }}
+  <div class="submit-row">
+    <input type="button" value="Recargar" class="button"
+           onclick="window.location.reload();">
+  </div>
+{% endblock %}
+
+{# Abajo dejamos lo estándar (pero con el CSS ya es sticky) #}
+{% block submit_buttons_bottom %}
+  {{ block.super }}
+{% endblock %}

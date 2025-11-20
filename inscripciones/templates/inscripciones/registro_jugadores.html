@@ -1,0 +1,252 @@
+{% extends 'inscripciones/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <h2 class="h5 mb-0">Registro de jugadores</h2>
+  </div>
+
+  <div class="card-body">
+
+    <!-- Datos del equipo -->
+    <dl class="row mb-4">
+      <dt class="col-sm-3 col-md-2">Equipo</dt>
+      <dd class="col-sm-9 col-md-10">{{ team.name }} ({{ team.tournament }})</dd>
+
+      <dt class="col-sm-3 col-md-2">Folio</dt>
+      <dd class="col-sm-9 col-md-10">{{ team.folio }}</dd>
+
+      <dt class="col-sm-3 col-md-2">Categoría</dt>
+      <dd class="col-sm-9 col-md-10">{{ team.get_category_display }}</dd>
+
+      <dt class="col-sm-3 col-md-2">Núm. patronal IMSS</dt>
+      <dd class="col-sm-9 col-md-10">
+        {{ team.employer_number_imss|default:"—" }}
+      </dd>
+    </dl>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if guardado %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      La lista de jugadores se guardó correctamente.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ formset.management_form }}
+
+      {# ocultos (incluye id) #}
+      {% for form in formset.forms %}
+      {% for hidden in form.hidden_fields %}
+      {{ hidden }}
+      {% endfor %}
+      {% endfor %}
+
+      {# RESUMEN AMIGABLE DE ERRORES #}
+      {% if formset.non_form_errors or formset.errors %}
+      <div class="alert alert-danger">
+        <h5 class="alert-heading mb-2">Hay errores en la lista de jugadores.</h5>
+        <p class="mb-1 small">
+          Verifica los jugadores marcados en rojo. Recuerda:
+        </p>
+        <ul class="small mb-3">
+          <li>Puedes registrar hasta <strong>20 jugadores</strong> por equipo.</li>
+          <li>Máximo <strong>2</strong> jugadores pueden ser <strong>refuerzos</strong>.</li>
+          <li>Los jugadores que <strong>no</strong> son refuerzo deben tener su <strong>NSS (IMSS)</strong>.</li>
+        </ul>
+
+        {% if formset.non_form_errors %}
+        <ul class="small mb-3">
+          {% for error in formset.non_form_errors %}
+          <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        <ul class="small mb-0">
+          {% for form in formset.forms %}
+          {% if form.errors %}
+          {% with ln=form.last_name.value fn=form.first_name.value %}
+          <li>
+            <strong>
+              Jugador {{ forloop.counter }}
+              {% if fn or ln %} ({{ fn }} {{ ln }}){% endif %}:
+            </strong>
+            Completa o corrige los campos:
+            {% for field in form.visible_fields %}
+            {% if field.errors %}
+            {{ field.label }}{% if not forloop.last %}, {% endif %}
+            {% endif %}
+            {% endfor %}
+            {% if form.non_field_errors %}
+            .
+            {% for e in form.non_field_errors %}
+            {{ e }}{% if not forloop.last %} {% endif %}
+            {% endfor %}
+            {% endif %}
+          </li>
+          {% endwith %}
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle table-jugadores">
+          <thead>
+            <tr>
+              <th class="text-center">#</th>
+              <th style="width:80px;">Número</th>
+              <th style="width:200px;">Nombre</th>
+              <th style="width:200px;">Apellido</th>
+              <th style="width:180px;">NSS (IMSS)</th>
+              <th style="width:90px;">Edad (años)</th>
+              <th style="width:90px;">Edad (meses)</th>
+              <th class="text-center" style="width:90px;">Refuerzo</th>
+              <th style="width:220px;">Foto (opcional)</th>
+              <th class="text-center" style="width:70px;">Eliminar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for form in formset.forms %}
+            <tr{% if form.errors %} class="table-danger" {% endif %}>
+              <td class="text-center">{{ forloop.counter }}</td>
+              <td>{{ form.jersey_number }}</td>
+              <td>{{ form.first_name }}</td>
+              <td>{{ form.last_name }}</td>
+              <td>{{ form.imss_number }}</td>
+              <td>{{ form.age_years }}</td>
+              <td>{{ form.age_months }}</td>
+              <td class="text-center">{{ form.is_reinforcement }}</td>
+
+              {# ---- FOTO ---- #}
+<td class="align-top">
+  {% if form.instance.pk and form.instance.photo %}
+    <div class="small text-muted">
+      Foto actual:
+      <a href="{{ form.instance.photo.url }}" target="_blank" rel="noopener">
+        Ver foto
+      </a>
+    </div>
+  {% else %}
+    {{ form.photo }}
+  {% endif %}
+</td>
+
+
+              {# ---- ELIMINAR (toggle) ---- #}
+              <td class="text-center align-middle">
+                {% if form.instance.pk %}
+                <button type="button" class="btn btn-outline-danger btn-sm btn-toggle-delete"
+                  data-delete-label="Eliminar" data-undo-label="Cancelar">
+                  Eliminar
+                </button>
+                {% endif %}
+
+                <!-- Checkbox real, pero oculto -->
+                <span class="d-none delete-checkbox-wrapper">
+                  {{ form.DELETE }}
+                </span>
+              </td>
+              </tr>
+              {% endfor %}
+          </tbody>
+
+
+        </table>
+
+        <p class="text-muted small mt-2">
+          Puedes registrar hasta <strong>20 jugadores</strong> por equipo.
+          Máximo <strong>2</strong> de ellos pueden ser <strong>refuerzos</strong>.
+        </p>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-success">
+          Guardar lista de jugadores
+        </button>
+      </div>
+    </form>
+  </div>
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.btn-toggle-delete').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const row = btn.closest('tr');
+      if (!row) return;
+
+      // buscamos el checkbox de DELETE de ese formulario
+      const checkbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      if (!checkbox) return;
+
+      checkbox.checked = !checkbox.checked;
+
+      if (checkbox.checked) {
+        // marcado para eliminar
+        row.classList.add('table-danger');
+        btn.classList.remove('btn-outline-danger');
+        btn.classList.add('btn-danger');
+        btn.textContent = btn.dataset.undoLabel || 'Cancelar';
+      } else {
+        // se cancela la eliminación
+        row.classList.remove('table-danger');
+        btn.classList.add('btn-outline-danger');
+        btn.classList.remove('btn-danger');
+        btn.textContent = btn.dataset.deleteLabel || 'Eliminar';
+      }
+    });
+  });
+});
+</script>
+
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.toggle-delete').forEach(function (btn) {
+      var checkbox = document.getElementById(btn.dataset.targetId);
+      if (!checkbox) return;
+
+      function sync() {
+        var row = btn.closest('tr');
+        if (checkbox.checked) {
+          btn.classList.remove('btn-outline-danger');
+          btn.classList.add('btn-danger');
+          btn.textContent = 'Eliminar jugador';
+          if (row) {
+            row.classList.add('fila-marcada-eliminar');
+          }
+        } else {
+          btn.classList.add('btn-outline-danger');
+          btn.classList.remove('btn-danger');
+          btn.textContent = 'Mantener';
+          if (row) {
+            row.classList.remove('fila-marcada-eliminar');
+          }
+        }
+      }
+
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
+        sync();
+      });
+
+      // Estado inicial (por si viene marcado después de un POST con errores)
+      sync();
+    });
+  });
+</script>
+
+{% endblock %}

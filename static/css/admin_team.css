@@ -1,0 +1,53 @@
+/* ------- Layout general del formulario de Team ------- */
+
+/* Que el contenido no se vaya a lo ancho infinito */
+.change-form form {
+    max-width: 1200px;
+}
+
+/* Filas de campos: un poco más compactas */
+.form-row {
+    gap: 8px;
+}
+
+/* En pantallas pequeñas, los campos se apilan en una columna */
+@media (max-width: 1000px) {
+    .form-row {
+        display: block;
+    }
+}
+
+/* ------- Inlines (Players / PaymentProofs) ------- */
+
+/* Que cada inline se vea como "tarjeta" y no tan aplastado */
+.inline-group .inline-related {
+    border: 1px solid #444;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+/* El título del inline (ej. "1 - Brayan Alvarado") un poco más marcado */
+.inline-group .inline-related h3 {
+    margin: 0 0 6px;
+    font-size: 0.95rem;
+}
+
+/* Inputs dentro del inline un poco más cortos */
+.inline-group .vTextField,
+.inline-group input[type="number"],
+.inline-group select {
+    max-width: 220px;
+}
+
+/* ------- Botones de Guardar siempre visibles (sticky) ------- */
+
+.submit-row {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    background: #111827;       /* oscuro (coincide con tema dark) */
+    border-top: 1px solid #374151;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}

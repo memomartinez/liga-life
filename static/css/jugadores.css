@@ -1,0 +1,105 @@
+/* Campos de la tabla de jugadores: bordes más visibles */
+.table-jugadores .form-control.form-control-sm {
+    border-width: 1.5px;
+    border-color: #9aa4b2;
+    font-size: 0.85rem;
+    padding-top: .15rem;
+    padding-bottom: .15rem;
+}
+
+/* Input de archivo un poco más compacto */
+.table-jugadores input[type="file"].form-control {
+    padding-top: .15rem;
+    padding-bottom: .15rem;
+    font-size: 0.8rem;
+}
+
+/* Zebra para distinguir filas aunque estén vacías */
+.table-jugadores tbody tr:nth-child(odd) td {
+    background-color: #f9fafb;
+}
+
+.table-jugadores tbody tr:nth-child(even) td {
+    background-color: #ffffff;
+}
+
+/* Encabezado un poco más marcado */
+.table-jugadores thead th {
+    background-color: #f0f4ff;
+    border-bottom: 2px solid #0d6efd;
+}
+
+/* Resaltar filas con error (además del rojo Bootstrap) */
+.table-jugadores tr.table-danger td {
+    background-color: #ffe5e5;
+}
+
+.table-jugadores tr.table-danger .form-control.form-control-sm {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 .15rem rgba(220, 53, 69, .25);
+}
+
+/* Ajuste visual de listas dentro del alert de errores */
+.alert-danger ul {
+    padding-left: 1.1rem;
+}
+
+/* Fila marcada para eliminar desde el formulario público */
+.table-jugadores tr.fila-marcada-eliminar td {
+    opacity: 0.55;
+    text-decoration: line-through;
+}
+
+/* Botón de eliminar un poquito más ancho */
+.table-jugadores .toggle-delete {
+    min-width: 7rem;
+}
+
+/* Foto actual: que se vea compacto */
+.table-jugadores .foto-actual span {
+    font-size: 0.75rem;
+}
+
+.table-jugadores .foto-actual a {
+    font-size: 0.8rem;
+}
+
+/* Ocultar el checkbox DELETE en la vista del delegado */
+.delete-cell input[type="checkbox"] {
+    display: none;
+}
+
+/* Fila marcada para eliminar desde el formulario público */
+.table-jugadores tr.fila-marcada-eliminar td {
+    opacity: 0.55;
+    text-decoration: line-through;
+}
+
+/* Botón de eliminar un poquito más ancho */
+.table-jugadores .toggle-delete {
+    min-width: 7rem;
+}
+
+/* Foto actual: que se vea compacto */
+.table-jugadores .foto-actual span {
+    font-size: 0.75rem;
+}
+
+.table-jugadores .foto-actual a {
+    font-size: 0.8rem;
+}
+
+/* Columna foto: que no se vea gigantesca */
+.table-jugadores td:nth-child(9) {
+    vertical-align: top;
+}
+
+/* Botón Eliminar más compacto */
+.btn-toggle-delete {
+    min-width: 90px;
+}
+
+/* Checkbox DELETE oculto (por si acaso el d-none falla en algún lado) */
+.delete-checkbox-wrapper input[type="checkbox"] {
+    display: none;
+}
