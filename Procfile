@@ -1,1 +1,1 @@
-web: gunicorn liga_life.wsgi:application
+web: gunicorn liga_life.wsgi:application --bind 0.0.0.0:$PORT
