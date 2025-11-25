@@ -47,15 +47,6 @@ def inscripcion(request):
     return render(request, 'inscripciones/inscripcion.html', {'form': form})
 
 
-from datetime import timedelta
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.utils import timezone
-
-from .forms import TeamForm, PaymentProofForm
-from .models import Tournament, Team, PaymentProof
-
-
 def subir_comprobante(request):
     """
     Vista pública para subir el comprobante de pago usando el folio del equipo.
@@ -89,6 +80,7 @@ def subir_comprobante(request):
         form = PaymentProofForm(initial=initial)
 
     return render(request, 'inscripciones/subir_comprobante.html', {'form': form})
+
 
 def registrar_jugadores(request, folio):
     """
