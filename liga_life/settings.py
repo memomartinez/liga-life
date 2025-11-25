@@ -3,11 +3,9 @@ from pathlib import Path
 
 import dj_database_url  # 👈 IMPORTANTE
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # En local, si no hay variable de entorno, usa esta clave.
-# En Render pondremos SECRET_KEY en las variables de entorno.
 SECRET_KEY = os.getenv("SECRET_KEY", "cambia-esta-clave-en-produccion")
 
 # En local seguirá True. En Render pondremos DEBUG=False.
@@ -16,7 +14,7 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    ".onrender.com",   # dominio de Render
+    ".onrender.com",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -37,7 +35,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # para servir estáticos en producción
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # para servir estáticos
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -69,8 +67,6 @@ WSGI_APPLICATION = "liga_life.wsgi.application"
 
 # ================== BASE DE DATOS ==================
 
-# Si Render define DATABASE_URL -> usamos Postgres
-# Si NO existe DATABASE_URL -> seguimos con SQLite (local)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
@@ -89,27 +85,34 @@ else:
         }
     }
 
-# Puedes dejarlo vacío como lo tenías
+
 AUTH_PASSWORD_VALIDATORS = []
 
 LANGUAGE_CODE = "es-mx"
-
 TIME_ZONE = "America/Mexico_City"
-
 USE_I18N = True
-
 USE_TZ = True
 
-# Archivos estáticos
+
+# ================== STATIC / MEDIA ==================
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
 
-# Archivos subidos (fotos de jugadores, etc.)
+# Solo agregar STATICFILES_DIRS si la carpeta existe (para evitar error en Render)
+STATICFILES_DIRS = []
+static_dir = BASE_DIR / "static"
+if static_dir.exists():
+    STATICFILES_DIRS.append(static_dir)
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# WhiteNoise: compresión + hash de archivos estáticos para producción
+# WhiteNoise: compresión + hash para producción
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# 👇 Forzamos tema claro en el admin para evitar el bug de Render
+DJANGO_ADMIN_FORCE_THEME = "light"
