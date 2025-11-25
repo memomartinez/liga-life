@@ -1,0 +1,44 @@
+{% extends "inscripciones/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-secondary text-white">
+    <h1 class="h5 mb-0">Inscripciones cerradas</h1>
+  </div>
+
+  <div class="card-body">
+    <p class="mb-3">
+      Por el momento las inscripciones a la
+      <strong>Liga de Futbol Empresarial LiFE</strong> se encuentran
+      <strong>cerradas</strong>.
+    </p>
+
+    <p class="mb-3">
+      Esto puede deberse a que el periodo de registro terminó o a que el
+      torneo ya alcanzó el número máximo de equipos permitidos.
+    </p>
+
+    <hr>
+
+    <p class="mb-2 fw-semibold">
+      ¿Qué puedes hacer ahora?
+    </p>
+    <ul class="mb-3">
+      <li>
+        Si ya registraste tu equipo, conserva el enlace que recibiste para
+        <strong>editar la lista de jugadores</strong>.
+      </li>
+      <li>
+        Si tienes dudas sobre tu registro, ponte en contacto con la
+        organización de la liga.
+      </li>
+    </ul>
+
+    <p class="text-muted small mb-0">
+      Para más información, por favor comunícate con el comité organizador
+      de la Liga LiFE.
+    </p>
+  </div>
+</div>
+{% endblock %}

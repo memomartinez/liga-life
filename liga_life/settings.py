@@ -1,6 +1,9 @@
 import os
 from pathlib import Path
 
+import dj_database_url  # 👈 IMPORTANTE
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # En local, si no hay variable de entorno, usa esta clave.
@@ -63,12 +66,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "liga_life.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+
+# ================== BASE DE DATOS ==================
+
+# Si Render define DATABASE_URL -> usamos Postgres
+# Si NO existe DATABASE_URL -> seguimos con SQLite (local)
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # Puedes dejarlo vacío como lo tenías
 AUTH_PASSWORD_VALIDATORS = []
