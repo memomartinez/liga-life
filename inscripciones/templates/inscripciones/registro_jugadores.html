@@ -112,6 +112,7 @@
               <th style="width:200px;">Nombre</th>
               <th style="width:200px;">Apellido</th>
               <th style="width:180px;">NSS (IMSS)</th>
+              <th style="width:200px;">CURP</th>
               <th style="width:90px;">Edad (años)</th>
               <th style="width:90px;">Edad (meses)</th>
               <th class="text-center" style="width:90px;">Refuerzo</th>
@@ -127,23 +128,24 @@
               <td>{{ form.first_name }}</td>
               <td>{{ form.last_name }}</td>
               <td>{{ form.imss_number }}</td>
+              <td>{{ form.curp }}</td> 
               <td>{{ form.age_years }}</td>
               <td>{{ form.age_months }}</td>
               <td class="text-center">{{ form.is_reinforcement }}</td>
 
               {# ---- FOTO ---- #}
-<td class="align-top">
-  {% if form.instance.pk and form.instance.photo %}
-    <div class="small text-muted">
-      Foto actual:
-      <a href="{{ form.instance.photo.url }}" target="_blank" rel="noopener">
-        Ver foto
-      </a>
-    </div>
-  {% else %}
-    {{ form.photo }}
-  {% endif %}
-</td>
+              <td class="align-top">
+                {% if form.instance.pk and form.instance.photo %}
+                <div class="small text-muted">
+                  Foto actual:
+                  <a href="{{ form.instance.photo.url }}" target="_blank" rel="noopener">
+                    Ver foto
+                  </a>
+                </div>
+                {% else %}
+                {{ form.photo }}
+                {% endif %}
+              </td>
 
 
               {# ---- ELIMINAR (toggle) ---- #}
@@ -173,43 +175,49 @@
         </p>
       </div>
 
-      <div class="d-flex justify-content-end mt-3">
+      <div class="d-flex justify-content-between mt-3">
+        <a href="{% url 'credenciales_pdf' team.folio %}" class="btn btn-outline-primary" target="_blank"
+          rel="noopener">
+          Ver credenciales (PDF)
+        </a>
+
         <button type="submit" class="btn btn-success">
           Guardar lista de jugadores
         </button>
       </div>
+
     </form>
   </div>
   <script>
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('.btn-toggle-delete').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const row = btn.closest('tr');
-      if (!row) return;
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.btn-toggle-delete').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const row = btn.closest('tr');
+          if (!row) return;
 
-      // buscamos el checkbox de DELETE de ese formulario
-      const checkbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
-      if (!checkbox) return;
+          // buscamos el checkbox de DELETE de ese formulario
+          const checkbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+          if (!checkbox) return;
 
-      checkbox.checked = !checkbox.checked;
+          checkbox.checked = !checkbox.checked;
 
-      if (checkbox.checked) {
-        // marcado para eliminar
-        row.classList.add('table-danger');
-        btn.classList.remove('btn-outline-danger');
-        btn.classList.add('btn-danger');
-        btn.textContent = btn.dataset.undoLabel || 'Cancelar';
-      } else {
-        // se cancela la eliminación
-        row.classList.remove('table-danger');
-        btn.classList.add('btn-outline-danger');
-        btn.classList.remove('btn-danger');
-        btn.textContent = btn.dataset.deleteLabel || 'Eliminar';
-      }
+          if (checkbox.checked) {
+            // marcado para eliminar
+            row.classList.add('table-danger');
+            btn.classList.remove('btn-outline-danger');
+            btn.classList.add('btn-danger');
+            btn.textContent = btn.dataset.undoLabel || 'Cancelar';
+          } else {
+            // se cancela la eliminación
+            row.classList.remove('table-danger');
+            btn.classList.add('btn-outline-danger');
+            btn.classList.remove('btn-danger');
+            btn.textContent = btn.dataset.deleteLabel || 'Eliminar';
+          }
+        });
+      });
     });
-  });
-});
-</script>
+  </script>
 
 </div>
 <script>

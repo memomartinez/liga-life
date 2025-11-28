@@ -127,6 +127,12 @@ class Player(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(12)],
         help_text='Meses adicionales (1–12).'
     )
+    curp = models.CharField(
+        'CURP',
+        max_length=18,
+        blank=True,
+        help_text='CURP del jugador (opcional).'
+    )
     is_reinforcement = models.BooleanField(
         'Es refuerzo',
         default=False,

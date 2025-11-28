@@ -1,16 +1,15 @@
-{# templates/admin/inscripciones/team/change_form.html #}
+{# templates/inscripciones/team/change_form.html #}
 {% extends "admin/change_form.html" %}
+{% load i18n %}
 
-{# Botones arriba: reutilizamos los de Django y añadimos "Recargar" #}
-{% block submit_buttons_top %}
-  {{ block.super }}
-  <div class="submit-row">
-    <input type="button" value="Recargar" class="button"
-           onclick="window.location.reload();">
-  </div>
-{% endblock %}
+{# ❌ Ocultamos por completo el bloque de herramientas del objeto
+   (ahí vivían HISTORIA y nuestro Recargar). #}
+{% block object-tools %}{% endblock %}
 
-{# Abajo dejamos lo estándar (pero con el CSS ya es sticky) #}
+{# ❌ Sin barra de guardar arriba #}
+{% block submit_buttons_top %}{% endblock %}
+
+{# ✅ Barra de guardar solo abajo (la que ya es sticky con el CSS) #}
 {% block submit_buttons_bottom %}
   {{ block.super }}
 {% endblock %}

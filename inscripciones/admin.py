@@ -4,6 +4,9 @@ from django import forms
 from .models import Tournament, Team, Player, PaymentProof
 
 
+# ===========================
+#  INLINE DE JUGADORES
+# ===========================
 class PlayerInlineForm(forms.ModelForm):
     class Meta:
         model = Player
@@ -12,19 +15,37 @@ class PlayerInlineForm(forms.ModelForm):
             "last_name",
             "first_name",
             "imss_number",
+            "curp",
             "age_years",
             "age_months",
             "is_reinforcement",
             "photo",
         )
         widgets = {
-            "jersey_number": forms.NumberInput(attrs={"style": "width: 70px;"}),
-            "last_name":    forms.TextInput(attrs={"style": "width: 150px;"}),
-            "first_name":   forms.TextInput(attrs={"style": "width: 150px;"}),
-            "imss_number":  forms.TextInput(attrs={"style": "width: 160px;"}),
-            "age_years":    forms.NumberInput(attrs={"style": "width: 70px;"}),
-            "age_months":   forms.NumberInput(attrs={"style": "width: 70px;"}),
-            # is_reinforcement y photo usan el widget por defecto
+            "jersey_number": forms.NumberInput(
+                attrs={"style": "width: 60px;"}
+            ),
+            "last_name": forms.TextInput(
+                attrs={"style": "width: 140px;"}
+            ),
+            "first_name": forms.TextInput(
+                attrs={"style": "width: 140px;"}
+            ),
+            "imss_number": forms.TextInput(
+                attrs={"style": "width: 120px;"}
+            ),
+            "curp": forms.TextInput(
+                attrs={"style": "width: 180px;"}
+            ),
+            "age_years": forms.NumberInput(
+                attrs={"style": "width: 60px;"}
+            ),
+            "age_months": forms.NumberInput(
+                attrs={"style": "width: 60px;"}
+            ),
+            "photo": forms.ClearableFileInput(
+                attrs={"style": "width: 220px;"}
+            ),
         }
 
 
@@ -37,6 +58,7 @@ class PlayerInline(admin.TabularInline):
         "last_name",
         "first_name",
         "imss_number",
+        "curp",
         "age_years",
         "age_months",
         "is_reinforcement",
@@ -44,6 +66,9 @@ class PlayerInline(admin.TabularInline):
     )
 
 
+# ===========================
+#  INLINE DE COMPROBANTES
+# ===========================
 class PaymentProofInline(admin.TabularInline):
     model = PaymentProof
     extra = 0
@@ -51,12 +76,18 @@ class PaymentProofInline(admin.TabularInline):
     can_delete = False
 
 
+# ===========================
+#  TOURNAMENT
+# ===========================
 @admin.register(Tournament)
 class TournamentAdmin(admin.ModelAdmin):
     list_display = ("name", "season", "is_open", "start_date", "end_date")
     list_filter = ("is_open",)
 
 
+# ===========================
+#  TEAM
+# ===========================
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
     inlines = [PlayerInline, PaymentProofInline]
@@ -64,10 +95,9 @@ class TeamAdmin(admin.ModelAdmin):
     # botones de guardar también arriba
     save_on_top = True
 
-    # template propio para meter botón "Recargar"
+    # usamos template propio para mover Historia + Recargar
     change_form_template = "inscripciones/team/change_form.html"
 
-    # Agrupamos campos para reducir el scroll
     fieldsets = (
         ("Datos del equipo", {
             "fields": (
@@ -101,13 +131,16 @@ class TeamAdmin(admin.ModelAdmin):
         }),
     )
 
-    # CSS extra sólo para este formulario de admin
     class Media:
         css = {
             "all": ("css/admin_team.css",)
         }
+        js = ("js/admin_team.js",)
 
 
+# ===========================
+#  PAYMENT PROOF
+# ===========================
 @admin.register(PaymentProof)
 class PaymentProofAdmin(admin.ModelAdmin):
     list_display = ("team", "uploaded_at", "file")

@@ -160,6 +160,7 @@ class PlayerForm(forms.ModelForm):
             'first_name',         # Nombre
             'last_name',          # Apellido
             'imss_number',        # NSS / IMSS del jugador
+            'curp',               # CURP
             'age_years',          # Edad (años)
             'age_months',         # Edad (meses)
             'is_reinforcement',   # Es refuerzo
@@ -178,6 +179,14 @@ class PlayerForm(forms.ModelForm):
             'imss_number': forms.TextInput(
                 attrs={'class': 'form-control form-control-sm'}
             ),
+            'curp': forms.TextInput(   # 👈 nuevo widget
+                attrs={
+                    'class': 'form-control form-control-sm',
+                    'maxlength': 18,
+                    'style': 'text-transform:uppercase;',
+                    'placeholder': 'CURP (18 caracteres)',
+                }
+            ),
             'age_years': forms.NumberInput(
                 attrs={'class': 'form-control form-control-sm', 'min': 0}
             ),
@@ -192,6 +201,21 @@ class PlayerForm(forms.ModelForm):
             ),
         }
 
+    def clean_curp(self):
+        """
+        Normaliza y valida la CURP si se captura.
+        No la hacemos obligatoria; solo validamos formato básico.
+        """
+        curp = (self.cleaned_data.get('curp') or '').strip().upper()
+        if not curp:
+            return curp
+
+        if len(curp) != 18:
+            raise forms.ValidationError("La CURP debe tener exactamente 18 caracteres.")
+
+        # Si quieres algo más estricto, aquí podrías meter un regex de CURP real.
+        return curp
+
     def clean(self):
         cleaned = super().clean()
 
@@ -201,6 +225,7 @@ class PlayerForm(forms.ModelForm):
             and not cleaned.get('first_name')
             and not cleaned.get('last_name')
             and not cleaned.get('imss_number')
+            and not cleaned.get('curp')           # 👈 añadimos curp a la comprobación
             and not cleaned.get('age_years')
             and not cleaned.get('age_months')
             and not cleaned.get('photo')
@@ -222,26 +247,22 @@ class PlayerForm(forms.ModelForm):
         if NON_FIELD_ERRORS in self._errors:
             nuevos = []
             for msg in self._errors[NON_FIELD_ERRORS]:
-                # Mensaje por número repetido
                 if "Team y Número ya existe" in msg or "Team and Number already exists" in msg:
                     nuevos.append(
                         "Ya existe un jugador en este equipo con ese número. "
                         "Verifica que el número de camiseta no esté repetido."
                     )
-                # Mensaje por nombre+apellido repetidos
                 elif "Team,Apellido y Nombre ya existe" in msg or "Team, Last name and First name already exists" in msg:
                     nuevos.append(
                         "Ya existe un jugador en este equipo con ese nombre y apellido. "
                         "Revisa que no tengas al mismo jugador registrado dos veces."
                     )
                 else:
-                    # Cualquier otro error lo dejamos tal cual
                     nuevos.append(msg)
 
             self._errors[NON_FIELD_ERRORS] = nuevos
 
         return cleaned
-
 
 
 class BasePlayerFormSet(BaseInlineFormSet):
@@ -276,6 +297,7 @@ class BasePlayerFormSet(BaseInlineFormSet):
                 and not cd.get('first_name')
                 and not cd.get('last_name')
                 and not cd.get('imss_number')
+                and not cd.get('curp')
                 and not cd.get('age_years')
                 and not cd.get('age_months')
                 and not cd.get('photo')

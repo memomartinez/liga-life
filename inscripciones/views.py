@@ -1,10 +1,14 @@
+# inscripciones/views.py
 from datetime import timedelta
+import tempfile
 
+from django.http import FileResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
 from .forms import TeamForm, PaymentProofForm, PlayerFormSet
-from .models import Tournament, Team, PaymentProof
+from .models import Tournament, Team, PaymentProof, Player
+from .utils import generar_credenciales_pdf
 
 
 def redirect_to_inscripcion(request):
@@ -63,7 +67,7 @@ def subir_comprobante(request):
             payment.team = team
             payment.save()
 
-            # 🔹 Actualizar status del equipo cuando envían comprobante
+            # Actualizar status del equipo cuando envían comprobante
             team.status = 'COMPROBANTE_ENVIADO'
             team.save(update_fields=['status'])
 
@@ -120,3 +124,22 @@ def registrar_jugadores(request, folio):
             'guardado': guardado,
         },
     )
+
+
+def descargar_credenciales(request, folio):
+    """
+    Genera y devuelve el PDF de credenciales para el equipo con ese folio.
+    """
+    equipo = get_object_or_404(Team, folio=folio)
+    # Ordenados por número de playera
+    jugadores = Player.objects.filter(team=equipo).order_by("jersey_number")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        generar_credenciales_pdf(equipo, jugadores, tmp.name)
+        tmp.seek(0)
+
+        return FileResponse(
+            open(tmp.name, "rb"),
+            content_type="application/pdf",
+            filename=f"credenciales_{equipo.folio}.pdf",
+        )

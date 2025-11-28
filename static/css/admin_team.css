@@ -1,53 +1,227 @@
-/* ------- Layout general del formulario de Team ------- */
+/* =========================================
+   ADMIN TEAM – LIGA_LIFE
+   Estilos para el formulario de Team + inlines
+   ========================================= */
 
-/* Que el contenido no se vaya a lo ancho infinito */
-.change-form form {
-    max-width: 1200px;
+
+/* -----------------------------------------
+   TABLA DE JUGADORES (INLINE) – GENERAL
+   ----------------------------------------- */
+
+.inline-group {
+    margin-top: 10px;
 }
 
-/* Filas de campos: un poco más compactas */
-.form-row {
-    gap: 8px;
+.inline-group table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-/* En pantallas pequeñas, los campos se apilan en una columna */
-@media (max-width: 1000px) {
-    .form-row {
-        display: block;
-    }
+/* Filas compactas */
+.inline-group table tr.form-row {
+    height: 30px;
 }
 
-/* ------- Inlines (Players / PaymentProofs) ------- */
-
-/* Que cada inline se vea como "tarjeta" y no tan aplastado */
-.inline-group .inline-related {
-    border: 1px solid #444;
-    margin-bottom: 10px;
-    padding: 8px 12px;
-    border-radius: 4px;
+/* Celdas compactas */
+.inline-group table tr.form-row > th,
+.inline-group table tr.form-row > td {
+    padding: 4px 6px;
+    font-size: 12px;
+    vertical-align: middle;
 }
 
-/* El título del inline (ej. "1 - Brayan Alvarado") un poco más marcado */
-.inline-group .inline-related h3 {
-    margin: 0 0 6px;
-    font-size: 0.95rem;
-}
-
-/* Inputs dentro del inline un poco más cortos */
-.inline-group .vTextField,
-.inline-group input[type="number"],
+/* Inputs y selects compactos */
+.inline-group input,
 .inline-group select {
-    max-width: 220px;
+    width: 100%;
+    font-size: 12px;
+    padding: 2px 3px;
+    box-sizing: border-box;
 }
 
-/* ------- Botones de Guardar siempre visibles (sticky) ------- */
+/* Quitar fondo raro en la empty-form (plantilla) */
+.inline-group .empty-form {
+    background: transparent;
+}
+
+
+/* -----------------------------------------
+   OCULTAR COLUMNA "ORIGINAL"
+   (1 - Apellido Nombre)
+   ----------------------------------------- */
+
+.inline-group td.original,
+.inline-group th.original {
+    display: none;
+}
+
+
+/* -----------------------------------------
+   COLUMNA NÚMERO (jersey_number)
+   ----------------------------------------- */
+
+.inline-group th.field-jersey_number,
+.inline-group td.field-jersey_number {
+    width: 60px;
+    text-align: center;
+}
+
+.inline-group td.field-jersey_number input {
+    text-align: center;
+}
+
+
+/* -----------------------------------------
+   COLUMNA FOTO DEL JUGADOR (photo)
+   Queremos:
+   - Botón azul "Ver foto"
+   - Icono de bote para borrar
+   - Input "Seleccionar archivo" abajo
+   ----------------------------------------- */
+
+/* Ancho razonable de la columna */
+.inline-group th.field-photo,
+.inline-group td.field-photo {
+    width: 230px;
+    max-width: 230px;
+    white-space: normal;
+}
+
+/* Ocultar textos tipo "Actualmente:", "Modificar:", "Borrar",
+   y el nombre larguísimo del archivo. */
+.inline-group td.field-photo {
+    font-size: 0;               /* oculta textos por defecto */
+}
+
+/* Si existe un contenedor especial (Django suele usar p.file-upload) */
+.inline-group td.field-photo .file-upload {
+    font-size: 0;
+}
+
+/* Enlace al archivo -> lo convertimos en botón "Ver foto" */
+.inline-group td.field-photo a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px;
+    margin-right: 4px;
+    border-radius: 4px;
+    background: #2563eb;
+    text-decoration: none;
+    color: transparent;          /* ocultamos el nombre real del archivo */
+    max-width: 100%;
+    white-space: nowrap;
+    font-size: 11px;             /* visible solo para el pseudo-texto */
+}
+
+.inline-group td.field-photo a::before {
+    content: "Ver foto";
+    color: #ffffff;
+}
+
+/* Input de archivo (nueva foto) – segunda línea, tamaño normal */
+.inline-group td.field-photo input[type="file"] {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 11px;
+}
+
+/* Checkbox "clear" real (borrar foto): lo ocultamos,
+   sólo usamos el <label> como botón de basura. */
+.inline-group td.field-photo input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Label de borrar como icono de bote de basura */
+.inline-group td.field-photo label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin-left: 4px;
+    border-radius: 4px;
+    border: 1px solid #b91c1c;
+    background: #fee2e2;
+    cursor: pointer;
+    font-size: 0;                 /* ocultamos texto "Borrar" */
+}
+
+.inline-group td.field-photo label::before {
+    content: "🗑";
+    font-size: 14px;
+    color: #b91c1c;
+}
+
+/* Cuando el checkbox está marcado, bote rojo sólido */
+.inline-group td.field-photo input[type="checkbox"]:checked + label {
+    background: #b91c1c;
+}
+
+.inline-group td.field-photo input[type="checkbox"]:checked + label::before {
+    color: #ffffff;
+}
+
+
+/* -----------------------------------------
+   COLUMNA ELIMINAR (BORRAR FILA INLINE)
+   ----------------------------------------- */
+
+.inline-group th.delete,
+.inline-group td.delete {
+    text-align: center;
+    width: 40px;
+}
+
+/* Checkbox de eliminar fila como icono de bote de basura */
+.inline-group td.delete input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: 1px solid #b91c1c;
+    background: #fee2e2;
+    position: relative;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.inline-group td.delete input[type="checkbox"]::before {
+    content: "🗑";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #b91c1c;
+}
+
+.inline-group td.delete input[type="checkbox"]:checked {
+    background: #b91c1c;
+}
+
+.inline-group td.delete input[type="checkbox"]:checked::before {
+    color: #ffffff;
+}
+
+
+/* -----------------------------------------
+   BOTONES DE GUARDAR STICKY ABAJO
+   (la barra azul de botones que ya te gusta)
+   ----------------------------------------- */
 
 .submit-row {
     position: sticky;
     bottom: 0;
-    z-index: 20;
-    background: #111827;       /* oscuro (coincide con tema dark) */
+    z-index: 40;
+    background: #111827;
     border-top: 1px solid #374151;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding: 8px 16px;
 }
