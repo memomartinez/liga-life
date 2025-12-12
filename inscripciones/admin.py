@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django import forms
+from django.utils.html import format_html
 
-from .models import Tournament, Team, Player, PaymentProof
+from .models import Tournament, Team, Player, PaymentProof, AdBanner
 
 
 # ===========================
@@ -147,3 +148,56 @@ class PaymentProofAdmin(admin.ModelAdmin):
     readonly_fields = ("uploaded_at",)
     search_fields = ("team__name", "team__folio")
     list_filter = ("uploaded_at",)
+
+
+# ===========================
+#  AD BANNERS (PUBLICIDAD)
+# ===========================
+@admin.register(AdBanner)
+class AdBannerAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "position",
+        "is_active",
+        "order",
+        "created_at",
+        "image_preview",
+    )
+    list_filter = ("position", "is_active")
+    search_fields = ("name",)
+    ordering = ("position", "order", "-created_at")
+    readonly_fields = ("image_preview", "created_at")
+
+    fieldsets = (
+        ("Información general", {
+            "fields": ("name", "position", "is_active", "order"),
+        }),
+        ("Contenido del anuncio", {
+            "fields": ("image", "image_url", "link_url", "image_preview"),
+        }),
+        ("Metadatos", {
+            "fields": ("created_at",),
+        }),
+    )
+
+    def image_preview(self, obj):
+        """
+        Muestra una miniatura de la imagen (subida o por URL).
+        """
+        src = ""
+        # Prioridad: archivo subido
+        if getattr(obj, "image", None) and getattr(obj.image, "url", None):
+            src = obj.image.url
+        # Si no hay archivo, usar la URL externa si existe
+        elif getattr(obj, "image_url", None):
+            src = obj.image_url
+
+        if not src:
+            return "Sin imagen"
+
+        return format_html(
+            '<img src="{}" style="max-height:80px; max-width:220px; border-radius:4px;" />',
+            src,
+        )
+
+    image_preview.short_description = "Vista previa"

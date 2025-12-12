@@ -1,26 +1,36 @@
 {% extends 'inscripciones/base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-  <div class="alert alert-success text-center">
-    <h3>¡Comprobante enviado correctamente!</h3>
-    <p>Gracias por subir tu comprobante. El comité revisará la información.</p>
-
-    <p class="mt-3 mb-0">
-      Equipo: <strong>{{ team.name }}</strong><br>
-      Folio: <strong>{{ team.folio }}</strong>
-    </p>
+<div class="card shadow-sm">
+  <div class="card-header bg-success text-white">
+    <h2 class="h5 mb-0">Comprobante enviado correctamente</h2>
   </div>
 
-  <div class="text-center mt-4 d-flex justify-content-center gap-2">
-    <a href="{% url 'inscripcion' %}" class="btn btn-outline-secondary">
-      Volver a la inscripción
-    </a>
+  <div class="card-body">
+    <!-- Mensaje principal -->
+    <div class="alert alert-success text-center mb-4">
+      <h3 class="h5 mb-2">¡Comprobante enviado correctamente!</h3>
+      <p class="mb-3">
+        Gracias por subir tu comprobante. El comité revisará la información.
+      </p>
 
-    {# 🔹 Siempre mandamos al flujo de jugadores; la vista decide si puede o no #}
-    <a href="{% url 'registrar_jugadores' team.folio %}" class="btn btn-primary">
-      Registrar jugadores
-    </a>
+      <p class="mt-3 mb-0">
+        Equipo: <strong>{{ team.name }}</strong><br>
+        Folio: <strong>{{ team.folio }}</strong>
+      </p>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="text-center d-flex justify-content-center gap-2 mb-4">
+      <a href="{% url 'inscripcion' %}" class="btn btn-outline-secondary">
+        Volver a la inscripción
+      </a>
+
+      {# Siempre mandamos al flujo de jugadores; la vista decide si puede o no #}
+      <a href="{% url 'registrar_jugadores' team.folio %}" class="btn btn-primary">
+        Registrar jugadores
+      </a>
+    </div>
   </div>
 </div>
 {% endblock %}

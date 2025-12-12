@@ -5,6 +5,7 @@
   <div class="card-header bg-primary text-white">
     <h2 class="h5 mb-0">Ficha de inscripción de equipo</h2>
   </div>
+
   <div class="card-body">
     <p class="mb-4">
       Completa la siguiente información para registrar tu equipo en la Liga de Futbol Empresarial (LiFE).
@@ -112,17 +113,17 @@
 
       <div class="mb-3">
         {% for checkbox in form.preferred_days %}
-          <div class="form-check form-check-inline">
-            {{ checkbox.tag }}
-            <label class="form-check-label ms-1">{{ checkbox.choice_label }}</label>
-          </div>
+        <div class="form-check form-check-inline">
+          {{ checkbox.tag }}
+          <label class="form-check-label ms-1">{{ checkbox.choice_label }}</label>
+        </div>
         {% endfor %}
       </div>
 
       {% if form.errors %}
-        <div class="alert alert-danger">
-          Por favor revisa los campos marcados, hay errores en el formulario.
-        </div>
+      <div class="alert alert-danger">
+        Por favor revisa los campos marcados, hay errores en el formulario.
+      </div>
       {% endif %}
 
       <p class="text-muted small mt-3">

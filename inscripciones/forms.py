@@ -204,16 +204,16 @@ class PlayerForm(forms.ModelForm):
     def clean_curp(self):
         """
         Normaliza y valida la CURP si se captura.
-        No la hacemos obligatoria; solo validamos formato básico.
+        No la hacemos obligatoria; solo validamos formato básico si se proporciona.
         """
         curp = (self.cleaned_data.get('curp') or '').strip().upper()
         if not curp:
-            return curp
+            return ''  # CURP vacía es válida (campo opcional)
 
+        # Solo validar longitud si se proporcionó algo
         if len(curp) != 18:
-            raise forms.ValidationError("La CURP debe tener exactamente 18 caracteres.")
+            raise forms.ValidationError("La CURP debe tener exactamente 18 caracteres (o déjala vacía).")
 
-        # Si quieres algo más estricto, aquí podrías meter un regex de CURP real.
         return curp
 
     def clean(self):
@@ -225,7 +225,7 @@ class PlayerForm(forms.ModelForm):
             and not cleaned.get('first_name')
             and not cleaned.get('last_name')
             and not cleaned.get('imss_number')
-            and not cleaned.get('curp')           # 👈 añadimos curp a la comprobación
+            and not cleaned.get('curp')
             and not cleaned.get('age_years')
             and not cleaned.get('age_months')
             and not cleaned.get('photo')
@@ -236,12 +236,18 @@ class PlayerForm(forms.ModelForm):
         if self.empty_permitted and is_blank:
             return cleaned
 
-        # Si NO es refuerzo, el NSS es obligatorio -> error en el campo
-        if not cleaned.get('is_reinforcement') and not cleaned.get('imss_number'):
-            self.add_error(
-                'imss_number',
-                "Para jugadores que no son refuerzo, el NSS (IMSS) es obligatorio."
-            )
+        # Si NO es refuerzo, el NSS y la CURP son obligatorios
+        if not cleaned.get('is_reinforcement'):
+            if not cleaned.get('imss_number'):
+                self.add_error(
+                    'imss_number',
+                    "Para jugadores que no son refuerzo, el NSS (IMSS) es obligatorio."
+                )
+            if not cleaned.get('curp'):
+                self.add_error(
+                    'curp',
+                    "Para jugadores que no son refuerzo, la CURP es obligatoria."
+                )
 
         # 🔹 Hacemos más entendibles los errores de duplicados (unique_together)
         if NON_FIELD_ERRORS in self._errors:
@@ -378,3 +384,37 @@ class PlayerAdminForm(forms.ModelForm):
     class Meta:
         model = Player
         fields = "__all__"
+
+
+# -----------------------------
+# Acceso a Registro de Jugadores
+# -----------------------------
+class TeamAccessForm(forms.Form):
+    delegate_phone = forms.CharField(
+        label="Teléfono del delegado",
+        max_length=20,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Ej. 5512345678'}
+        ),
+    )
+    access_pin = forms.CharField(
+        label="PIN de seguridad",
+        max_length=4,
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control', 'placeholder': '4 dígitos', 'maxlength': '4'}
+        ),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        phone = cleaned_data.get("delegate_phone")
+        pin = cleaned_data.get("access_pin")
+
+        if phone:
+            # Normalizamos quitando espacios/guiones
+            cleaned_data["delegate_phone"] = ''.join(filter(str.isdigit, phone))
+
+        if pin and (len(pin) != 4 or not pin.isdigit()):
+            self.add_error('access_pin', "El PIN debe ser de 4 dígitos numéricos.")
+
+        return cleaned_data

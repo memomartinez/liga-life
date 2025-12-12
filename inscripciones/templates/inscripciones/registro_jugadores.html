@@ -2,6 +2,52 @@
 {% load static %}
 
 {% block content %}
+<style>
+  /* Estilos para campos bloqueados */
+  .player-row input[readonly],
+  .player-row select[disabled] {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+    border-color: #dee2e6;
+  }
+
+  .player-row.editing input[readonly],
+  .player-row.editing select[disabled] {
+    background-color: white;
+    cursor: text;
+  }
+
+  .star-reinforcement:hover {
+    transform: scale(1.2);
+  }
+
+  .star-reinforcement.is-reinforcement {
+    color: #dc3545;
+    /* Rojo para refuerzos */
+  }
+
+  .star-reinforcement.is-normal {
+    color: #ffc107;
+    /* Dorado para jugadores normales */
+  }
+
+  /* Botón de editar */
+  .btn-edit-player {
+    font-size: 18px;
+    cursor: pointer;
+    color: #6c757d;
+    transition: color 0.2s;
+  }
+
+  .btn-edit-player:hover {
+    color: #0d6efd;
+  }
+
+  .btn-edit-player.editing {
+    color: #198754;
+  }
+</style>
+
 <div class="card shadow-sm">
   <div class="card-header bg-primary text-white">
     <h2 class="h5 mb-0">Registro de jugadores</h2>
@@ -63,7 +109,8 @@
         <ul class="small mb-3">
           <li>Puedes registrar hasta <strong>20 jugadores</strong> por equipo.</li>
           <li>Máximo <strong>2</strong> jugadores pueden ser <strong>refuerzos</strong>.</li>
-          <li>Los jugadores que <strong>no</strong> son refuerzo deben tener su <strong>NSS (IMSS)</strong>.</li>
+          <li>Los jugadores que <strong>no</strong> son refuerzo deben tener su <strong>NSS (IMSS)</strong> y
+            <strong>CURP</strong>.</li>
         </ul>
 
         {% if formset.non_form_errors %}
@@ -117,21 +164,24 @@
               <th style="width:90px;">Edad (meses)</th>
               <th class="text-center" style="width:90px;">Refuerzo</th>
               <th style="width:220px;">Foto (opcional)</th>
-              <th class="text-center" style="width:70px;">Eliminar</th>
+              <th class="text-center" style="width:70px;">Editar</th>
             </tr>
           </thead>
           <tbody>
             {% for form in formset.forms %}
-            <tr{% if form.errors %} class="table-danger" {% endif %}>
+            <tr class="player-row{% if form.errors %} table-danger{% endif %}" data-row-id="{{ forloop.counter0 }}"
+              data-has-player="{% if form.instance.pk %}true{% else %}false{% endif %}">
               <td class="text-center">{{ forloop.counter }}</td>
               <td>{{ form.jersey_number }}</td>
               <td>{{ form.first_name }}</td>
               <td>{{ form.last_name }}</td>
               <td>{{ form.imss_number }}</td>
-              <td>{{ form.curp }}</td> 
+              <td>{{ form.curp }}</td>
               <td>{{ form.age_years }}</td>
               <td>{{ form.age_months }}</td>
-              <td class="text-center">{{ form.is_reinforcement }}</td>
+              <td class="text-center">
+                {{ form.is_reinforcement }}
+              </td>
 
               {# ---- FOTO ---- #}
               <td class="align-top">
@@ -147,26 +197,19 @@
                 {% endif %}
               </td>
 
-
-              {# ---- ELIMINAR (toggle) ---- #}
+              {# ---- EDITAR ---- #}
               <td class="text-center align-middle">
                 {% if form.instance.pk %}
-                <button type="button" class="btn btn-outline-danger btn-sm btn-toggle-delete"
-                  data-delete-label="Eliminar" data-undo-label="Cancelar">
-                  Eliminar
-                </button>
-                {% endif %}
-
-                <!-- Checkbox real, pero oculto -->
-                <span class="d-none delete-checkbox-wrapper">
-                  {{ form.DELETE }}
+                <span class="btn-edit-player" data-row="{{ forloop.counter0 }}" title="Click para editar">
+                  ✏️
                 </span>
+                {% else %}
+                <span class="text-success small">Nuevo</span>
+                {% endif %}
               </td>
-              </tr>
-              {% endfor %}
+            </tr>
+            {% endfor %}
           </tbody>
-
-
         </table>
 
         <p class="text-muted small mt-2">
@@ -188,72 +231,65 @@
 
     </form>
   </div>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      document.querySelectorAll('.btn-toggle-delete').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          const row = btn.closest('tr');
-          if (!row) return;
-
-          // buscamos el checkbox de DELETE de ese formulario
-          const checkbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
-          if (!checkbox) return;
-
-          checkbox.checked = !checkbox.checked;
-
-          if (checkbox.checked) {
-            // marcado para eliminar
-            row.classList.add('table-danger');
-            btn.classList.remove('btn-outline-danger');
-            btn.classList.add('btn-danger');
-            btn.textContent = btn.dataset.undoLabel || 'Cancelar';
-          } else {
-            // se cancela la eliminación
-            row.classList.remove('table-danger');
-            btn.classList.add('btn-outline-danger');
-            btn.classList.remove('btn-danger');
-            btn.textContent = btn.dataset.deleteLabel || 'Eliminar';
-          }
-        });
-      });
-    });
-  </script>
-
 </div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.toggle-delete').forEach(function (btn) {
-      var checkbox = document.getElementById(btn.dataset.targetId);
-      if (!checkbox) return;
+    console.log('Script de jugadores cargado');
 
-      function sync() {
-        var row = btn.closest('tr');
-        if (checkbox.checked) {
-          btn.classList.remove('btn-outline-danger');
-          btn.classList.add('btn-danger');
-          btn.textContent = 'Eliminar jugador';
-          if (row) {
-            row.classList.add('fila-marcada-eliminar');
-          }
-        } else {
-          btn.classList.add('btn-outline-danger');
-          btn.classList.remove('btn-danger');
-          btn.textContent = 'Mantener';
-          if (row) {
-            row.classList.remove('fila-marcada-eliminar');
-          }
+    // ========== BLOQUEAR/DESBLOQUEAR CAMPOS ==========
+
+    // Funciones auxiliares
+    function lockRow(row) {
+      row.classList.remove('editing');
+      row.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), select').forEach(function (field) {
+        field.setAttribute('readonly', 'readonly');
+        if (field.tagName === 'SELECT') {
+          field.setAttribute('disabled', 'disabled');
         }
-      }
+      });
+    }
 
+    function unlockRow(row) {
+      row.classList.add('editing');
+      row.querySelectorAll('input[readonly], select[disabled]').forEach(function (field) {
+        field.removeAttribute('readonly');
+        if (field.tagName === 'SELECT') {
+          field.removeAttribute('disabled');
+        }
+      });
+    }
+
+    // Bloquear todos los campos de jugadores existentes al cargar
+    document.querySelectorAll('.player-row[data-has-player="true"]').forEach(function (row) {
+      lockRow(row);
+    });
+
+    // Manejar click en el botón de editar
+    document.querySelectorAll('.btn-edit-player').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
-        checkbox.checked = !checkbox.checked;
-        sync();
-      });
+        var rowId = this.dataset.row;
+        var row = document.querySelector('.player-row[data-row-id="' + rowId + '"]');
 
-      // Estado inicial (por si viene marcado después de un POST con errores)
-      sync();
+        if (!row) {
+          console.error('No se encontro la fila con id:', rowId);
+          return;
+        }
+
+        if (row.classList.contains('editing')) {
+          lockRow(row);
+          this.classList.remove('editing');
+          this.title = 'Click para editar';
+        } else {
+          unlockRow(row);
+          this.classList.add('editing');
+          this.title = 'Editando...';
+        }
+      });
     });
+
+    console.log('Event listeners configurados');
   });
 </script>
 
