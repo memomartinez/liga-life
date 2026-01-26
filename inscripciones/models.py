@@ -1,9 +1,10 @@
 import random
 import string
 from datetime import timedelta
+
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Tournament(models.Model):
@@ -15,7 +16,7 @@ class Tournament(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-start_date', 'name']
+        ordering = ["-start_date", "name"]
 
     def __str__(self):
         return self.name if not self.season else f"{self.name} - {self.season}"
@@ -23,78 +24,76 @@ class Tournament(models.Model):
 
 class Team(models.Model):
     CATEGORY_CHOICES = [
-        ('EMP', 'Empresarial'),
-        ('LIB', 'Libre'),
-        ('VET', 'Veteranos'),
+        ("EMP", "Empresarial"),
+        ("LIB", "Libre"),
+        ("VET", "Veteranos"),
     ]
     STATUS_CHOICES = [
-        ('PRE_REGISTRADO', 'Pre-registrado (sin comprobante)'),
-        ('COMPROBANTE_ENVIADO', 'Comprobante enviado'),
-        ('APROBADO', 'Aprobado'),
-        ('RECHAZADO', 'Rechazado'),
-        ('EXPIRADO', 'Expirado'),
+        ("PRE_REGISTRADO", "Pre-registrado (sin comprobante)"),
+        ("COMPROBANTE_ENVIADO", "Comprobante enviado"),
+        ("APROBADO", "Aprobado"),
+        ("RECHAZADO", "Rechazado"),
+        ("EXPIRADO", "Expirado"),
     ]
 
     tournament = models.ForeignKey(
         Tournament,
         on_delete=models.PROTECT,
-        related_name='teams',
+        related_name="teams",
     )
-    name = models.CharField('Nombre del equipo', max_length=150)
-    company_name = models.CharField('Empresa/Patrocinador', max_length=150, blank=True)
+    name = models.CharField("Nombre del equipo", max_length=150)
+    company_name = models.CharField("Empresa/Patrocinador", max_length=150, blank=True)
 
     employer_number_imss = models.CharField(
-        'Número patronal IMSS',
+        "Número patronal IMSS",
         max_length=20,
         blank=True,
-        help_text='Número patronal registrado ante el IMSS (opcional).',
+        help_text="Número patronal registrado ante el IMSS (opcional).",
     )
 
-    # Responsable principal
     category = models.CharField(max_length=3, choices=CATEGORY_CHOICES)
-    delegate_name = models.CharField('Nombre del delegado', max_length=150)
-    delegate_phone = models.CharField('Teléfono del delegado', max_length=30)
+
+    delegate_name = models.CharField("Nombre del delegado", max_length=150)
+    delegate_phone = models.CharField("Teléfono del delegado", max_length=30)
     delegate_office_phone = models.CharField(
-        'Teléfono de oficina del delegado',
+        "Teléfono de oficina del delegado",
         max_length=30,
         blank=True,
     )
-    delegate_email = models.EmailField('Correo del delegado', blank=True)
+    delegate_email = models.EmailField("Correo del delegado", blank=True)
 
-    # Responsable suplente
     alternate_delegate_name = models.CharField(
-        'Nombre del responsable suplente',
+        "Nombre del responsable suplente",
         max_length=150,
         blank=True,
     )
     alternate_delegate_phone = models.CharField(
-        'Teléfono del suplente',
+        "Teléfono del suplente",
         max_length=30,
         blank=True,
     )
     alternate_delegate_office_phone = models.CharField(
-        'Teléfono de oficina del suplente',
+        "Teléfono de oficina del suplente",
         max_length=30,
         blank=True,
     )
 
-    # Preferencias de juego (guardamos códigos separados por coma, ej. "LUN,MIE")
     preferred_days = models.CharField(
-        'Días preferentes de juego',
+        "Días preferentes de juego",
         max_length=50,
         blank=True,
+        help_text='Códigos separados por coma, ej. "LUN,MIE".',
     )
 
-    # Documentos (INEs)
     delegate_ine = models.FileField(
-        'INE del delegado',
-        upload_to='ines/',
+        "INE del delegado",
+        upload_to="ines/",
         null=True,
         blank=True,
     )
     alternate_delegate_ine = models.FileField(
-        'INE del suplente',
-        upload_to='ines/',
+        "INE del suplente",
+        upload_to="ines/",
         null=True,
         blank=True,
     )
@@ -103,19 +102,21 @@ class Team(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='PRE_REGISTRADO',
+        default="PRE_REGISTRADO",
     )
     folio = models.CharField(max_length=30, unique=True, blank=True)
+
     access_pin = models.CharField(
-        'PIN de acceso',
+        "PIN de acceso",
         max_length=4,
         blank=True,
-        help_text='PIN de 4 dígitos para editar jugadores.',
+        help_text="PIN de 4 dígitos para editar jugadores.",
     )
+
     payment_deadline = models.DateField(null=True, blank=True)
 
     class Meta:
-        ordering = ['tournament', 'name']
+        ordering = ["tournament", "name"]
 
     def __str__(self):
         return f"{self.name} ({self.tournament})"
@@ -127,67 +128,76 @@ class Team(models.Model):
         if creating and self.payment_deadline is None:
             self.payment_deadline = timezone.now().date() + timedelta(days=7)
 
+        # Normalización defensiva del PIN si existe (solo dígitos)
+        if self.access_pin:
+            self.access_pin = "".join(ch for ch in self.access_pin if ch.isdigit())[:4]
+
         super().save(*args, **kwargs)
 
-        # Generación de folio LIFE-<torneo>-<consecutivo>
+        # Folio: generar una sola vez en el modelo
+        # (evita inconsistencias con generación en views)
         if creating and not self.folio:
+            # Folio estable: incluye torneo + id del team
             self.folio = f"LIFE-{self.tournament.id:02d}-{self.id:04d}"
-            super().save(update_fields=['folio'])
+            super().save(update_fields=["folio"])
 
-        # Generar PIN de 4 dígitos si no existe (siempre)
+        # PIN de 4 dígitos: generar una sola vez
         if creating and not self.access_pin:
-            self.access_pin = ''.join(random.choices(string.digits, k=4))
-            super().save(update_fields=['access_pin'])
+            self.access_pin = "".join(random.choices(string.digits, k=4))
+            super().save(update_fields=["access_pin"])
 
 
 class Player(models.Model):
     team = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
-        related_name='players',
+        related_name="players",
     )
 
     jersey_number = models.PositiveIntegerField(
-        'Número',
+        "Número",
         validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
-    last_name = models.CharField('Apellido', max_length=150)
-    first_name = models.CharField('Nombre', max_length=150)
+    last_name = models.CharField("Apellido", max_length=150)
+    first_name = models.CharField("Nombre", max_length=150)
 
     imss_number = models.CharField(
-        'Número IMSS',
+        "Número IMSS",
         max_length=20,
         blank=True,
-        help_text='Si es refuerzo y no tiene IMSS, deja en blanco.',
+        help_text="Si es refuerzo y no tiene IMSS, deja en blanco.",
     )
+
     age_years = models.PositiveIntegerField(
-        'Edad (años)',
+        "Edad (años)",
         null=True,
         blank=True,
     )
     age_months = models.PositiveIntegerField(
-        'Edad (meses)',
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(0), MaxValueValidator(12)],
-        help_text='Meses adicionales (0–12).',
-    )
+    "Edad (meses)",
+    null=True,
+    blank=True,
+    validators=[MinValueValidator(1), MaxValueValidator(12)],
+    help_text="Meses adicionales (1–12).",
+)
+
+
     curp = models.CharField(
-        'CURP',
+        "CURP",
         max_length=18,
         blank=True,
-        help_text='CURP del jugador (opcional).',
-    )
-    is_reinforcement = models.BooleanField(
-        'Es refuerzo',
-        default=False,
-        help_text='Marca esta casilla si el jugador es refuerzo.',
+        help_text="CURP del jugador (opcional).",
     )
 
-    # Foto opcional del jugador
+    is_reinforcement = models.BooleanField(
+        "Es refuerzo",
+        default=False,
+        help_text="Marca esta casilla si el jugador es refuerzo.",
+    )
+
     photo = models.ImageField(
-        'Foto del jugador (opcional)',
-        upload_to='jugadores_fotos/',
+        "Foto del jugador (opcional)",
+        upload_to="jugadores_fotos/",
         null=True,
         blank=True,
     )
@@ -195,10 +205,10 @@ class Player(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['team', 'jersey_number']
+        ordering = ["team", "jersey_number"]
         unique_together = [
-            ('team', 'jersey_number'),
-            ('team', 'last_name', 'first_name'),
+            ("team", "jersey_number"),
+            ("team", "last_name", "first_name"),
         ]
 
     def __str__(self):
@@ -207,77 +217,63 @@ class Player(models.Model):
 
 
 class PaymentProof(models.Model):
-    # ahora es ForeignKey, no OneToOne
     team = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
-        related_name='payment_proofs',
+        related_name="payment_proofs",
     )
-    file = models.FileField(upload_to='comprobantes/')
+    file = models.FileField(upload_to="comprobantes/")
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-uploaded_at']
+        ordering = ["-uploaded_at"]
 
     def __str__(self):
         return f"Comprobante {self.team.folio}"
 
 
-# =============================
-#  PUBLICIDAD / BANNERS
-# =============================
 class AdBanner(models.Model):
     POSITION_CHOICES = [
-        ('TOP', 'Banner superior'),
-        ('SIDEBAR', 'Banner lateral'),
-        ('BOTTOM', 'Banner inferior'),
+        ("TOP", "Banner superior"),
+        ("SIDEBAR", "Banner lateral"),
+        ("BOTTOM", "Banner inferior"),
     ]
 
-    name = models.CharField(
-        'Nombre interno',
-        max_length=100,
-    )
-    position = models.CharField(
-        'Posición',
-        max_length=10,
-        choices=POSITION_CHOICES,
-    )
+    name = models.CharField("Nombre interno", max_length=100)
+    position = models.CharField("Posición", max_length=10, choices=POSITION_CHOICES)
     image = models.ImageField(
-        'Imagen del banner',
-        upload_to='publicidad/',
+        "Imagen del banner",
+        upload_to="publicidad/",
         blank=True,
         null=True,
     )
     image_url = models.URLField(
-        'URL de imagen externa',
+        "URL de imagen externa",
         blank=True,
-        help_text='Opcional. Si se especifica, se usará en lugar de la imagen subida.',
+        help_text="Opcional. Si se especifica, se usará en lugar de la imagen subida.",
     )
     link_url = models.URLField(
-        'URL de destino',
+        "URL de destino",
         blank=True,
-        help_text='Opcional. Link al hacer clic en el banner.',
+        help_text="Opcional. Link al hacer clic en el banner.",
     )
-    is_active = models.BooleanField(
-        'Activo',
-        default=True,
-    )
+    is_active = models.BooleanField("Activo", default=True)
     order = models.PositiveIntegerField(
-        'Orden',
+        "Orden",
         default=0,
-        help_text='Se usa para ordenar los banners dentro de la misma posición.',
+        help_text="Se usa para ordenar los banners dentro de la misma posición.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['position', 'order', '-created_at']
+        ordering = ["position", "order", "-created_at"]
 
     def __str__(self):
         return f"{self.name} ({self.get_position_display()})"
 
     @property
     def get_image_url(self):
-        if self.image and hasattr(self.image, 'url'):
+        if self.image and hasattr(self.image, "url"):
             return self.image.url
         if self.image_url:
             return self.image_url
